@@ -4,6 +4,7 @@ from typing import List
 import models
 import schemas
 from database import engine, get_db
+from auth import hash_senha
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -13,9 +14,16 @@ app = FastAPI()
 def root():
     return {"message": "API rodando com PostgreSQL"}
 
-@app.post("/usuarios/", response_model=schemas.UsuarioResponse)
+
+
+@app.post("/register/", response_model=schemas.UsuarioResponse)
 def criar_usuario(usuario: schemas.UsuarioCreate, db: Session = Depends(get_db)):
-    db_usuario = models.Usuario(**usuario.model_dump())
+    db_usuario = models.Usuario(
+        nome=usuario.nome,
+        email=usuario.email,
+        senha=hash_senha(usuario.senha),
+        telefone=usuario.telefone
+    )
     db.add(db_usuario)
     db.commit()
     db.refresh(db_usuario)

@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from datetime import datetime
 from typing import Optional
 
@@ -9,7 +9,16 @@ class UsuarioBase(BaseModel):
     telefone: Optional[str] = None
 
 class UsuarioCreate(UsuarioBase):
-    pass
+    senha: str
+
+    @field_validator('senha')
+    @classmethod
+    def validar_senha(cls, v):
+        if len(v) < 6:
+            raise ValueError('Senha deve ter no mínimo 6 caracteres')
+        if len(v) > 72:
+            raise ValueError('Senha não pode ter mais de 72 caracteres')
+        return v
 
 class UsuarioResponse(UsuarioBase):
     id: int
