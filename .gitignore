@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Banco de dados
+*.db
+*.sqlite
+*.sqlite3
+postgresql.conf
+pg_hba.conf
+pg_ident.conf
+
+# Variáveis de ambiente
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+logs/
+
+# Arquivos do sistema
+.DS_Store
+Thumbs.db
+
+# Arquivos de configuração local
+config.local.py
+settings_local.py
