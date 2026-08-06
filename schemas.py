@@ -27,6 +27,13 @@ class UsuarioResponse(UsuarioBase):
     class Config:
         from_attributes = True
 
+
+class UsuarioLogin(BaseModel):
+    email: str
+    senha: str 
+
+
+
 # Schema para Produto
 class ProdutoBase(BaseModel):
     nome: str

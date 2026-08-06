@@ -34,6 +34,14 @@ def hash_senha(senha: str):
     return pwd_context.hash(senha)
 
 
+def autenticar_usuario(db: Session, email: str, senha: str):
+    usuario = db.query(models.Usuario).filter(models.Usuario.email == email).first()
+    if not usuario:
+        return False
+    if not verificar_senha(senha, usuario.senha):
+        return False
+    return usuario
+
 def criar_token_acesso(data: dict, expires_delta: Optional[timedelta] = None):
     """Cria um token JWT"""
     to_encode = data.copy()

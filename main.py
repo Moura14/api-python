@@ -4,7 +4,7 @@ from typing import List
 import models
 import schemas
 from database import engine, get_db
-from auth import hash_senha
+from auth import hash_senha, autenticar_usuario
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -32,6 +32,14 @@ def criar_usuario(usuario: schemas.UsuarioCreate, db: Session = Depends(get_db))
 @app.get("/usuarios/", response_model=List[schemas.UsuarioResponse])
 def listar_usuarios(db: Session = Depends(get_db)):
     return db.query(models.Usuario).all()
+
+
+@app.post("/login/", response_model=schemas.UsuarioResponse)
+def login(usuario: schemas.UsuarioLogin, db: Session = Depends(get_db)):
+   db_usuario = autenticar_usuario(db, usuario.email, usuario.senha)
+   if not db_usuario:
+       raise HTTPException(status_code=400, detail="Email ou senha incorretos")
+   return db_usuario
 
 @app.post("/produtos/", response_model=schemas.ProdutoResponse)
 def criar_produto(produto: schemas.ProdutoCreate, db: Session = Depends(get_db)):
