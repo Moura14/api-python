@@ -1,10 +1,14 @@
-from fastapi import FastAPI, Depends, HTTPException
+from datetime import timedelta
+
+from fastapi import FastAPI, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
 import models
 import schemas
 from database import engine, get_db
-from auth import hash_senha, autenticar_usuario
+from auth import ACCESS_TOKEN_EXPIRE_MINUTES, ACCESS_TOKEN_EXPIRE_MINUTES, criar_token_acesso, hash_senha, autenticar_usuario, get_current_user
+from fastapi.security import OAuth2PasswordRequestForm
+
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -34,12 +38,40 @@ def listar_usuarios(db: Session = Depends(get_db)):
     return db.query(models.Usuario).all()
 
 
-@app.post("/login/", response_model=schemas.UsuarioResponse)
+@app.post("/login/", response_model=schemas.TokenResponse)
 def login(usuario: schemas.UsuarioLogin, db: Session = Depends(get_db)):
-   db_usuario = autenticar_usuario(db, usuario.email, usuario.senha)
-   if not db_usuario:
-       raise HTTPException(status_code=400, detail="Email ou senha incorretos")
-   return db_usuario
+    db_usuario = autenticar_usuario(db, usuario.email, usuario.senha)
+    if not db_usuario:
+        raise HTTPException(status_code=400, detail="Email ou senha incorretos")
+    
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = criar_token_acesso(
+        data={"sub": db_usuario.email}, 
+        expires_delta=access_token_expires
+    )
+    
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+          "usuario": db_usuario
+    }   
+
+
+@app.post("/tickets/", response_model=schemas.TicketCreate)
+def criar_ticket(ticket: schemas.TicketCreate, db: Session = Depends(get_db), current_user: schemas.UsuarioResponse = Depends(get_current_user)):
+    db_ticket = models.Ticket(
+        titulo=ticket.titulo,
+        descricao=ticket.descricao,
+        prioridade=ticket.prioridade,
+        categoria=ticket.categoria,
+        anexo_url=ticket.anexo_url,
+        status="Aberto",
+        criado_por=current_user.id
+    )
+    db.add(db_ticket)
+    db.commit()
+    db.refresh(db_ticket)
+    return db_ticket
 
 @app.post("/produtos/", response_model=schemas.ProdutoResponse)
 def criar_produto(produto: schemas.ProdutoCreate, db: Session = Depends(get_db)):

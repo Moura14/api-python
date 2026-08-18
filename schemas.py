@@ -32,7 +32,35 @@ class UsuarioLogin(BaseModel):
     email: str
     senha: str 
 
+class TicketCreate(BaseModel):
+    titulo: str
+    descricao: str
+    prioridade: str
+    categoria: str
+    anexo_url: Optional[str] = None
 
+
+class TicketResponse(TicketCreate):
+    id: int
+    titulo: str
+    descricao: str
+    prioridade: str
+    categoria: str
+    anexo_url: Optional[str] = None
+    status: str
+    criado_por: int
+    criador_nome: str
+    tecnico_responsavel_id: Optional[int] = None
+    tecnico_nome: Optional[str] = None
+    data_criacao: datetime
+    data_atualizacao: datetime
+    data_resolucao: Optional[datetime] = None
+
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str
+    usuario: UsuarioResponse
 
 # Schema para Produto
 class ProdutoBase(BaseModel):
