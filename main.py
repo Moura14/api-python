@@ -7,10 +7,13 @@ import models
 import schemas
 from database import engine, get_db
 from auth import ACCESS_TOKEN_EXPIRE_MINUTES, ACCESS_TOKEN_EXPIRE_MINUTES, criar_token_acesso, hash_senha, autenticar_usuario, get_current_user
-from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+
 
 
 models.Base.metadata.create_all(bind=engine)
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 app = FastAPI()
 
@@ -39,10 +42,10 @@ def listar_usuarios(db: Session = Depends(get_db)):
 
 
 @app.post("/login/", response_model=schemas.TokenResponse)
-def login(usuario: schemas.UsuarioLogin, db: Session = Depends(get_db)):
-    db_usuario = autenticar_usuario(db, usuario.email, usuario.senha)
+def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    db_usuario = autenticar_usuario(db, form_data.username, form_data.password)
     if not db_usuario:
-        raise HTTPException(status_code=400, detail="Email ou senha incorretos")
+        raise HTTPException(status_code=400, detail="Usuário ou senha incorretos")
     
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = criar_token_acesso(
@@ -53,9 +56,13 @@ def login(usuario: schemas.UsuarioLogin, db: Session = Depends(get_db)):
     return {
         "access_token": access_token,
         "token_type": "bearer",
-          "usuario": db_usuario
-    }   
+        "usuario": db_usuario
+    }
 
+
+@app.get("/me", response_model=schemas.UsuarioResponse)
+async def get_me(usuario: models.Usuario = Depends(get_current_user)):
+    return usuario
 
 @app.post("/tickets/", response_model=schemas.TicketCreate)
 def criar_ticket(ticket: schemas.TicketCreate, db: Session = Depends(get_db), current_user: schemas.UsuarioResponse = Depends(get_current_user)):

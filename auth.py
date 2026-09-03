@@ -3,13 +3,15 @@ from typing import Optional
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 import models
 import schemas
 from database import get_db
 import os
 from dotenv import load_dotenv
+from fastapi.openapi.models import OAuthFlows as OAuthFlowsModel
+from fastapi.security import OAuth2
 
 load_dotenv()
 
@@ -20,7 +22,8 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 1440
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+
 
 async def get_current_user(
     token: str = Depends(oauth2_scheme),
@@ -53,8 +56,6 @@ async def get_current_user(
     if usuario is None:
         raise credentials_exception
 
-    
-    
     return usuario
 
 def verificar_senha(senha_plana: str, senha_hash: str):
