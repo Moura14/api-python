@@ -64,21 +64,34 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
 async def get_me(usuario: models.Usuario = Depends(get_current_user)):
     return usuario
 
-@app.post("/tickets/", response_model=schemas.TicketCreate)
-def criar_ticket(ticket: schemas.TicketCreate, db: Session = Depends(get_db), current_user: schemas.UsuarioResponse = Depends(get_current_user)):
+from fastapi import Depends, HTTPException
+from sqlalchemy.orm import Session
+import models, schemas
+from database import get_db
+
+@app.post("/tickets/", response_model=schemas.TicketResponse)
+def criar_ticket(ticket: schemas.TicketCreate, db: Session = Depends(get_db)):
     db_ticket = models.Ticket(
         titulo=ticket.titulo,
         descricao=ticket.descricao,
         prioridade=ticket.prioridade,
         categoria=ticket.categoria,
         anexo_url=ticket.anexo_url,
-        status="Aberto",
-        criado_por=current_user.id
+        status="aberto", 
+        criado_por=1,     
+        criador_nome="João" 
     )
     db.add(db_ticket)
     db.commit()
     db.refresh(db_ticket)
     return db_ticket
+
+
+@app.get('/listar/', response_model=list[schemas.TicketResponse])
+def listar_ticket(db: Sesssion = Depends(get_db)):
+    tickets = db.query(models.Ticket).all()
+    return tickets
+
 
 @app.post("/produtos/", response_model=schemas.ProdutoResponse)
 def criar_produto(produto: schemas.ProdutoCreate, db: Session = Depends(get_db)):
