@@ -41,33 +41,26 @@ def listar_usuarios(db: Session = Depends(get_db)):
     return db.query(models.Usuario).all()
 
 
+
 @app.post("/login/", response_model=schemas.TokenResponse)
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    db_usuario = autenticar_usuario(db, form_data.username, form_data.password)
-    if not db_usuario:
+    usuario = autenticar_usuario(db, form_data.username, form_data.password)
+    if not usuario:
         raise HTTPException(status_code=400, detail="Usuário ou senha incorretos")
-    
+
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = criar_token_acesso(
-        data={"sub": db_usuario.email}, 
+        data={"sub": usuario.email},
         expires_delta=access_token_expires
     )
-    
-    return {
-        "access_token": access_token,
-        "token_type": "bearer",
-        "usuario": db_usuario
-    }
+    return {"access_token": access_token, "token_type": "bearer"}
+
 
 
 @app.get("/me", response_model=schemas.UsuarioResponse)
 async def get_me(usuario: models.Usuario = Depends(get_current_user)):
     return usuario
 
-from fastapi import Depends, HTTPException
-from sqlalchemy.orm import Session
-import models, schemas
-from database import get_db
 
 @app.post("/tickets/", response_model=schemas.TicketResponse)
 def criar_ticket(ticket: schemas.TicketCreate, db: Session = Depends(get_db)):
