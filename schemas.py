@@ -1,4 +1,4 @@
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_validator, ConfigDict
 from datetime import datetime
 from typing import Optional
 
@@ -25,8 +25,7 @@ class UsuarioResponse(UsuarioBase):
     criado_em: datetime
     
     class Config:
-        from_attributes = True
-
+       model_config = ConfigDict(from_attributes=True)
 
 class UsuarioLogin(BaseModel):
     email: str
@@ -77,4 +76,4 @@ class ProdutoResponse(ProdutoBase):
     criado_em: datetime
     
     class Config:
-        from_attributes = True
+        model_config = ConfigDict(from_attributes=True)
