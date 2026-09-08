@@ -1,36 +1,23 @@
-from pydantic import BaseModel, ConfigDict
-from database import Base
 from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey
+from sqlalchemy.sql import func 
+from database import Base
+
+class Usuario(Base):
+    __tablename__ = "usuarios"
+
+    id = Column(Integer, primary_key=True, index=True)
+    nome = Column(String(100), nullable=False)
+    email = Column(String(100), unique=True, index=True, nullable=False)
+    senha = Column(String(255), nullable=False)
+    telefone = Column(String(20))
+    criado_em = Column(DateTime(timezone=True), server_default=func.now())
 
 
+class Produto(Base):
+    __tablename__ = "produtos"
 
-class UsuarioSchema(BaseModel):
-    id: int | None = None
-    nome: str
-    email: str
-    telefone: str | None = None
-
-    model_config = ConfigDict(from_attributes=True)
-
-
-class ProdutoSchema(BaseModel):
-    id: int | None = None
-    nome: str
-    descricao: str | None = None
-    preco: float
-    quantidade: int
-
-    model_config = ConfigDict(from_attributes=True)
-
-
-class TicketSchema(BaseModel):
-    id: int | None = None
-    titulo: str
-    descricao: str
-    prioridade: str
-    categoria: str
-    status: str
-    criador_nome: str
-    tecnico_nome: str | None = None
-
-    model_config = ConfigDict(from_attributes=True)
+    id = Column(Integer, primary_key=True, index=True)
+    nome = Column(String(100), nullable=False)
+    descricao = Column(String(500))
+    preco = Column(Float, nullable=False)
+    quantidade = Column(Integer, default=0)

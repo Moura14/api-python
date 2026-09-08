@@ -7,6 +7,10 @@ import schemas
 from database import engine, get_db
 from auth import ACCESS_TOKEN_EXPIRE_MINUTES, criar_token_acesso, hash_senha, autenticar_usuario, get_current_user
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from passlib.context import CryptContext
+from pwdlib import PasswordHash
+
+pwd_context = PasswordHash.recommended()
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -21,15 +25,22 @@ def root():
 # Usuários
 @app.post("/register/", response_model=schemas.UsuarioResponse)
 def criar_usuario(usuario: schemas.UsuarioCreate, db: Session = Depends(get_db)):
+  
+    senha_criptografada = pwd_context.hash(usuario.senha) 
+
+    
     db_usuario = models.Usuario(
         nome=usuario.nome,
         email=usuario.email,
-        senha=hash_senha(usuario.senha),
-        telefone=usuario.telefone
+        telefone=usuario.telefone,
+        senha=senha_criptografada  
     )
+    
+    
     db.add(db_usuario)
     db.commit()
     db.refresh(db_usuario)
+    
     return db_usuario
 
 @app.get("/usuarios/", response_model=List[schemas.UsuarioResponse])
@@ -48,7 +59,7 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
         data={"sub": usuario.email},
         expires_delta=access_token_expires
     )
-    return {"access_token": access_token, "token_type": "bearer"}
+    return {"access_token": access_token, "token_type": "bearer", "usuario": usuario}
 
 @app.get("/me", response_model=schemas.UsuarioResponse)
 async def get_me(usuario: schemas.UsuarioResponse  = Depends(get_current_user)):
