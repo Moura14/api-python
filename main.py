@@ -18,16 +18,15 @@ app = FastAPI()
 def root():
     return {"message": "API rodando com PostgreSQL"}
 
-
-
+# Usuários
 @app.post("/register/", response_model=schemas.UsuarioResponse)
 def criar_usuario(usuario: schemas.UsuarioCreate, db: Session = Depends(get_db)):
     db_usuario = models.Usuario(
-    nome=usuario.nome,
-    email=usuario.email,
-    senha=hash_senha(usuario.senha),
-    telefone=usuario.telefone
-)
+        nome=usuario.nome,
+        email=usuario.email,
+        senha=hash_senha(usuario.senha),
+        telefone=usuario.telefone
+    )
     db.add(db_usuario)
     db.commit()
     db.refresh(db_usuario)
@@ -37,8 +36,7 @@ def criar_usuario(usuario: schemas.UsuarioCreate, db: Session = Depends(get_db))
 def listar_usuarios(db: Session = Depends(get_db)):
     return db.query(models.Usuario).all()
 
-
-
+# Login
 @app.post("/login/", response_model=schemas.TokenResponse)
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     usuario = autenticar_usuario(db, form_data.username, form_data.password)
@@ -49,16 +47,14 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
     access_token = criar_token_acesso(
         data={"sub": usuario.email},
         expires_delta=access_token_expires
-        )
+    )
     return {"access_token": access_token, "token_type": "bearer"}
-
-
 
 @app.get("/me", response_model=schemas.UsuarioResponse)
 async def get_me(usuario: models.Usuario = Depends(get_current_user)):
     return usuario
 
-
+# Tickets
 @app.post("/tickets/", response_model=schemas.TicketResponse)
 def criar_ticket(ticket: schemas.TicketCreate, db: Session = Depends(get_db)):
     db_ticket = models.Ticket(
@@ -67,22 +63,20 @@ def criar_ticket(ticket: schemas.TicketCreate, db: Session = Depends(get_db)):
         prioridade=ticket.prioridade,
         categoria=ticket.categoria,
         anexo_url=ticket.anexo_url,
-        status="aberto", 
-        criado_por=1,     
-        criador_nome="João" 
-        )
+        status="aberto",
+        criado_por=1,
+        criador_nome="João"
+    )
     db.add(db_ticket)
     db.commit()
     db.refresh(db_ticket)
     return db_ticket
 
-
-@app.get('/listar/', response_model=list[schemas.TicketResponse])
+@app.get("/listar/", response_model=List[schemas.TicketResponse])
 def listar_ticket(db: Session = Depends(get_db)):
-    tickets = db.query(models.Ticket).all()
-    return tickets
+    return db.query(models.Ticket).all()
 
-
+# Produtos
 @app.post("/produtos/", response_model=schemas.ProdutoResponse)
 def criar_produto(produto: schemas.ProdutoCreate, db: Session = Depends(get_db)):
     db_produto = models.Produto(**produto.model_dump())
