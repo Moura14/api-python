@@ -1,4 +1,8 @@
 from pydantic import BaseModel, ConfigDict
+from database import Base
+from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey
+
+
 
 class UsuarioSchema(BaseModel):
     id: int | None = None

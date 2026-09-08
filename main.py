@@ -51,7 +51,7 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
     return {"access_token": access_token, "token_type": "bearer"}
 
 @app.get("/me", response_model=schemas.UsuarioResponse)
-async def get_me(usuario: models.Usuario = Depends(get_current_user)):
+async def get_me(usuario: schemas.UsuarioResponse  = Depends(get_current_user)):
     return usuario
 
 # Tickets
