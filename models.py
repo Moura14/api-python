@@ -1,6 +1,8 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, DateTime
 from sqlalchemy.sql import func 
 from database import Base
+
+from datetime import datetime
 
 class Usuario(Base):
     __tablename__ = "usuarios"
@@ -21,3 +23,23 @@ class Produto(Base):
     descricao = Column(String(500))
     preco = Column(Float, nullable=False)
     quantidade = Column(Integer, default=0)
+
+
+
+class Ticket(Base):
+    __tablename__ = "tickets"
+
+    id = Column(Integer, primary_key=True, index=True)
+    titulo = Column(String, nullable=False)
+    descricao = Column(String, nullable=False)
+    prioridade = Column(String, nullable=False)
+    categoria = Column(String, nullable=False)
+    anexo_url = Column(String, nullable=True)
+
+    status = Column(String, default="aberto")
+    criado_por = Column(Integer, nullable=True, default=0)
+    criador_nome = Column(String, nullable=True, default="Sistema")
+    data_criacao = Column(DateTime, default=datetime.utcnow)
+    data_atualizacao = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+

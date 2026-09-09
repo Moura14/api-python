@@ -74,9 +74,9 @@ def criar_ticket(ticket: schemas.TicketCreate, db: Session = Depends(get_db)):
         prioridade=ticket.prioridade,
         categoria=ticket.categoria,
         anexo_url=ticket.anexo_url,
-        status="aberto",
-        criado_por=1,
-        criador_nome="João"
+        criador_nome="João",
+        criado_por=1
+        
     )
     db.add(db_ticket)
     db.commit()
