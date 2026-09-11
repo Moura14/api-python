@@ -67,16 +67,15 @@ async def get_me(usuario: schemas.UsuarioResponse  = Depends(get_current_user)):
 
 # Tickets
 @app.post("/tickets/", response_model=schemas.TicketResponse)
-def criar_ticket(ticket: schemas.TicketCreate, db: Session = Depends(get_db)):
+def criar_ticket(ticket: schemas.TicketCreate, db: Session = Depends(get_db), usuario: schemas.UsuarioResponse = Depends(get_current_user)):
     db_ticket = models.Ticket(
         titulo=ticket.titulo,
         descricao=ticket.descricao,
         prioridade=ticket.prioridade,
         categoria=ticket.categoria,
         anexo_url=ticket.anexo_url,
-        criador_nome="João",
-        criado_por=1
-        
+        criador_nome=usuario.nome,
+        criado_por=usuario.id
     )
     db.add(db_ticket)
     db.commit()
