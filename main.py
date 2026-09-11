@@ -83,8 +83,8 @@ def criar_ticket(ticket: schemas.TicketCreate, db: Session = Depends(get_db), us
     return db_ticket
 
 @app.get("/listar/", response_model=List[schemas.TicketResponse])
-def listar_ticket(db: Session = Depends(get_db)):
-    return db.query(models.Ticket).all()
+def listar_ticket(db: Session = Depends(get_db), usuario: schemas.UsuarioResponse = Depends(get_current_user)):
+    return db.query(models.Ticket).filter(models.Ticket.criado_por == usuario.id).all()
 
 # Produtos
 @app.post("/produtos/", response_model=schemas.ProdutoResponse)
